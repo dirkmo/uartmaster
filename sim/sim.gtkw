@@ -1,0 +1,27 @@
+[*]
+[*] GTKWave Analyzer v3.3.109 (w)1999-2020 BSI
+[*] Sat Oct 23 14:48:32 2021
+[*]
+[dumpfile] "/home/dirk/dev/uartmaster/sim/trace.vcd"
+[dumpfile_mtime] "Sat Oct 23 14:44:52 2021"
+[dumpfile_size] 23900
+[savefile] "/home/dirk/dev/uartmaster/sim/sim.gtkw"
+[timestart] 1000
+[size] 3840 2051
+[pos] -1 -1
+*-16.000000 138200 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[treeopen] TOP.
+[treeopen] TOP.UartMaster.
+[sst_width] 417
+[signals_width] 303
+[sst_expanded] 1
+[sst_vpaned_height] 631
+@28
+TOP.UartMaster.uart_rx0.o_received
+@820
+TOP.UartMaster.uart_rx0.rx_buf[7:0]
+@28
+TOP.UartMaster.uartprotocol0.i_uart_received_pulse
+TOP.UartMaster.uartprotocol0.r_mode
+[pattern_trace] 1
+[pattern_trace] 0
