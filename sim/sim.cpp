@@ -1,8 +1,8 @@
 #include <stdint.h>
 #include <string.h>
 #include <verilated_vcd_c.h>
-#include "verilator/VUartMaster.h"
-#include "verilator/VUartMaster_UartMaster.h"
+#include "VUartMaster.h"
+#include "VUartMaster_UartMaster.h"
 #include "verilated.h"
 #include "uart.h"
 
@@ -97,6 +97,9 @@ int main(int argc, char *argv[]) {
         handle(pCore);
         tick();
     }
+
+    pCore->final();
+    delete pCore;
 
     if (pTrace) {
         pTrace->close();

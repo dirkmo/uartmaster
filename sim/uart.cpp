@@ -1,7 +1,7 @@
 #include <queue>
 #include <stdio.h>
 #include <verilated_vcd_c.h>
-#include "verilator/VUartMaster.h"
+#include "VUartMaster.h"
 #include "verilated.h"
 #include "uart.h"
 
