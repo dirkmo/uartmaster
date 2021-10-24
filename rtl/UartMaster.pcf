@@ -1,8 +1,8 @@
 set_io clk100mhz    J3
 set_io reset_n      K11
-set_io we           T7
-set_io oe           L9
-set_io cs           T6
+set_io we_n         T7
+set_io oe_n         L9
+set_io cs_n         T6
 set_io uart_tx      E4
 set_io uart_rx      B2
 
@@ -41,3 +41,6 @@ set_io addr[14]     M8
 set_io addr[15]     T5
 set_io addr[16]     R6
 set_io addr[17]     P8
+
+set_io led1         M12
+set_io led2         R16

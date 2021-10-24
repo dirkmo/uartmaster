@@ -49,7 +49,7 @@ end
 reg [1:0] r_nibble_idx;
 always @(posedge i_clk)
 begin
-    if (address_pulse || write_pulse || i_reset)
+    if (address_pulse || write_pulse || perform_read_pulse || i_reset)
         r_nibble_idx <= 0;
     else if (i_uart_received_pulse)
         r_nibble_idx <= r_nibble_idx + 1'b1;
@@ -113,7 +113,7 @@ wire [7:0] ascii_nibble = { 4'd0, nibble_read } + ((nibble_read > 9) ? 8'd87 : 8
 
 assign o_uart_dat = ascii_nibble;
 
-assign o_uart_send_pulse = r_rstate[1] && i_uart_send_ready; // TODO
+assign o_uart_send_pulse = r_rstate[1] && i_uart_send_ready;
 
 wire read_done_pulse = (r_rstate==1) && i_ack;
 
@@ -131,7 +131,7 @@ begin
             endcase
         end
     end
-    if (read_done_pulse || (write_done_pulse)) begin
+    if (read_done_pulse || write_done_pulse) begin
         // auto-incrementr_data <= i_dat;
         r_address <= r_address + 1'b1;
     end
