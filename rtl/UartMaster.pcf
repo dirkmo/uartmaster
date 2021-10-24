@@ -1,4 +1,4 @@
-set_io clk          J3
+set_io clk100mhz    J3
 set_io reset_n      K11
 set_io we           T7
 set_io oe           L9

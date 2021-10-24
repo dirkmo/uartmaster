@@ -1,10 +1,13 @@
 PROJ = top
 PIN_DEF = UartMaster.pcf
 DEVICE = hx8k
-SOURCES = top.v UartMaster.v UartProtocol.v uart_rx.v uart_tx.v
+SOURCES = top.v UartMaster.v UartProtocol.v uart_rx.v uart_tx.v pll.v
 all: $(PROJ).rpt $(PROJ).bin
 
-%.blif: %.v
+pll:
+	icepll -i 100 -o 25 -m -f pll.v
+
+%.blif: pll %.v
 	yosys -p 'synth_ice40 -top top -blif $@' $(SOURCES)
 
 %.asc: $(PIN_DEF) %.blif
@@ -26,4 +29,4 @@ sudo-prog: $(PROJ).bin
 clean:
 	rm -f $(PROJ).blif $(PROJ).asc $(PROJ).bin $(PROJ).rpt
 
-.PHONY: all prog clean
+.PHONY: all prog clean pll

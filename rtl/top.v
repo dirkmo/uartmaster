@@ -1,5 +1,5 @@
 module top(
-    input  clk,
+    input  clk100mhz,
     input  reset_n,
     inout  [7:0]  data,
     output [17:0] addr,
@@ -13,12 +13,13 @@ module top(
 wire [7:0] i_data;
 wire [7:0] o_data;
 wire clk25mhz;
+wire pll_locked;
 
 assign addr[17:16] = 2'b00;
 assign oe = ~we;
 
-clk_divn #(.WIDTH(32), .N(1000)) 
-    clockdiv_slow(.clk(clk), .clk_out(clk25mhz));
+// icepll -i 100 -o 25 -m -f pll.v
+pll pll0(clk100mhz, clk25mhz, pll_locked);
 
 SB_IO #(
     .PIN_TYPE(6'b 1010_01),
