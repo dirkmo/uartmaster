@@ -1,7 +1,7 @@
 PROJ = top
 PIN_DEF = UartMaster.pcf
 DEVICE = hx8k
-SOURCES = top.v UartMaster.v UartProtocol.v uart_rx.v uart_tx.v pll.v
+SOURCES = top.v pll.v ../rtl/UartMaster.v ../rtl/UartProtocol.v ../rtl/uart_rx.v ../rtl/uart_tx.v
 all: $(PROJ).rpt $(PROJ).bin
 
 pll:
