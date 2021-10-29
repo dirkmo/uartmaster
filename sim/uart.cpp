@@ -1,8 +1,8 @@
 #include <queue>
 #include <stdio.h>
-#include <verilated_vcd_c.h>
-#include "VUartMaster.h"
 #include "verilated.h"
+#include <verilated_vcd_c.h>
+#include "VUartMasterSlave.h"
 #include "uart.h"
 
 using namespace std;
@@ -134,9 +134,10 @@ int uart_handle(int *rxbyte) {
     return 0;
 }
 
-void uart_send(const char *dat) {
+void uart_send(int ch, const char *dat) {
     while(*dat) {
-        fifo_send_to_fpga.push(*dat);
+        char c = *dat | ((!!ch) << 7);
+        fifo_send_to_fpga.push(c);
         dat++;
     }
 }

@@ -1,22 +1,22 @@
 #include <stdint.h>
 #include <string.h>
+#include <verilated.h>
 #include <verilated_vcd_c.h>
-#include "VUartMaster.h"
-#include "VUartMaster_UartMaster.h"
-#include "verilated.h"
+#include "VUartMasterSlave.h"
+#include "VUartMasterSlave_UartMasterSlave.h"
 #include "uart.h"
 
 using namespace std;
 
 VerilatedVcdC *pTrace = NULL;
-VUartMaster *pCore;
+VUartMasterSlave *pCore;
 
 uint64_t tickcount = 0;
 uint64_t ts = 1000;
 
 uint8_t mem[0x10000];
 
-void handle(VUartMaster *pCore);
+void handle(VUartMasterSlave *pCore);
 
 
 void opentrace(const char *vcdname) {
@@ -50,22 +50,22 @@ void reset() {
     pCore->i_reset = 0;
 }
 
-void handle(VUartMaster *pCore) {
+void handle(VUartMasterSlave *pCore) {
     static int uart_wait = 0;
     static int clk = -1;
     if (clk != pCore->i_clk && pCore->i_clk) {
-        if (pCore->o_cs) {
-            if (pCore->o_we) {
-                mem[pCore->o_addr] = pCore->o_data;
-                printf("mem write: %04x <-- %02x\n", pCore->o_addr, mem[pCore->o_addr]);
+        if (pCore->o_master_cs) {
+            if (pCore->o_master_we) {
+                mem[pCore->o_master_addr] = pCore->o_master_data;
+                printf("mem write: %04x <-- %02x\n", pCore->o_master_addr, mem[pCore->o_master_addr]);
             } else {
-                pCore->i_data = mem[pCore->o_addr];
-                printf("mem read: %04x --> %02x\n", pCore->o_addr, mem[pCore->o_addr]);
+                pCore->i_master_data = mem[pCore->o_master_addr];
+                printf("mem read: %04x --> %02x\n", pCore->o_master_addr, mem[pCore->o_master_addr]);
             }
         } else {
-            pCore->i_data = 0;
+            pCore->i_master_data = 0;
         }
-        pCore->i_ack = pCore->o_cs;
+        pCore->i_master_ack = pCore->o_master_cs;
     }
     clk = pCore->i_clk;
     
@@ -78,20 +78,22 @@ void handle(VUartMaster *pCore) {
 
 int main(int argc, char *argv[]) {
     Verilated::traceEverOn(true);
-    pCore = new VUartMaster();
+    pCore = new VUartMasterSlave();
 
-#if defined(TRACE_ON)
-    opentrace("trace.vcd");
-#endif
-
-    uart_init(&pCore->i_uart_rx, &pCore->o_uart_tx, &pCore->i_clk, pCore->UartMaster->SYS_FREQ/pCore->UartMaster->BAUDRATE);
+    if (argc > 1) {
+        if( string(argv[1]) == "-t" ) {
+            printf("Trace enabled\n");
+            opentrace("trace.vcd");
+        }
+    }
+    uart_init(&pCore->i_uart_rx, &pCore->o_uart_tx, &pCore->i_clk, pCore->UartMasterSlave->SYS_FREQ/pCore->UartMasterSlave->BAUDRATE);
 
     reset();
     for ( int i = 0; i < sizeof(mem); i++ ) {
         mem[i] = i & 0xff;
     }
 
-    uart_send("L1234RWa4");
+    uart_send(1, "L432aRWa4");
 
     while(tickcount < 100000 * ts) {
         handle(pCore);

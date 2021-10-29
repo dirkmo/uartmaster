@@ -11,7 +11,7 @@ endif()
 add_executable(simulation sim/sim.cpp sim/uart.cpp)
 
 # Add the Verilated circuit to the target
-verilate(simulation COVERAGE TRACE
+verilate(simulation TRACE
   INCLUDE_DIRS "sim/"
   VERILATOR_ARGS -O0 -x-assign 0 +librescan +libext+.v -y rtl/
-  SOURCES rtl/UartMaster.v)
+  SOURCES rtl/UartMasterSlave.v)
