@@ -12,10 +12,10 @@ module UartMasterSlave(
     input  [7:0] i_slave_data,
     output [7:0] o_slave_data,
     input        i_slave_addr,
-    output o_slave_ack,
-    input  i_slave_we,
-    input  i_slave_cs,
-    output o_int,
+    output reg   o_slave_ack;
+    input        i_slave_we,
+    input        i_slave_cs,
+    output       o_int,
 
     input  i_uart_rx,
     output o_uart_tx
@@ -130,7 +130,10 @@ wire [7:0] status = { 4'd0, fifo_tx_full, fifo_tx_empty, fifo_rx_full, fifo_rx_e
 
 assign o_slave_data = i_slave_addr ? fifo_rx_dat : status;
 
-assign fifo_tx_push = i_slave_cs && i_slave_we && i_slave_addr;
+always @(posedge i_clk)
+    o_slave_ack  <= i_slave_cs;
+
+assign fifo_tx_push = i_slave_cs && i_slave_we &&  i_slave_addr;
 assign fifo_rx_pop  = i_slave_cs && i_slave_we && ~i_slave_addr;
 
 endmodule
