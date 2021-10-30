@@ -72,7 +72,11 @@ void handle(VUartMasterSlave *pCore) {
     int rxbyte;
     int ret = uart_handle(&rxbyte);
     if (ret) {
-        printf("uart: '%c'\n", rxbyte);
+        if (rxbyte & 0x80) {
+            printf("uart ch1: '%c'\n", rxbyte & 0x7f);
+        } else {
+            printf("uart ch0: '%c'\n", rxbyte);
+        }
     }
 }
 
