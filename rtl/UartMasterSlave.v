@@ -12,7 +12,7 @@ module UartMasterSlave(
     input  [7:0] i_slave_data,
     output [7:0] o_slave_data,
     input        i_slave_addr,
-    output reg   o_slave_ack;
+    output reg   o_slave_ack,
     input        i_slave_we,
     input        i_slave_cs,
     output       o_int,
@@ -31,7 +31,7 @@ wire received_pulse_to_protocol;
 wire fifo_rx_push_pulse;
 reg  r_fifo_rx_pop;
 reg  r_fifo_tx_push;
-wire r_fifo_tx_pop;
+reg  r_fifo_tx_pop;
 wire prot_push;
 wire fifo_tx_full;
 wire fifo_rx_full;
