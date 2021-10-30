@@ -29,8 +29,8 @@ wire uart_tx_ready;
 wire uart_rx_received_pulse;
 wire received_pulse_to_protocol;
 wire fifo_rx_push_pulse;
-reg  r_fifo_rx_pop;
-reg  r_fifo_tx_push;
+wire fifo_rx_pop;
+wire fifo_tx_push;
 reg  r_fifo_tx_pop;
 wire prot_push;
 wire fifo_tx_full;
@@ -66,7 +66,7 @@ fifo #(.DEPTH(3)) fifo_rx(
     .i_dat(uart_rx_dat),
     .o_dat(fifo_rx_dat),
     .i_push(fifo_rx_push_pulse),
-    .i_pop(r_fifo_rx_pop),
+    .i_pop(fifo_rx_pop),
     .o_empty(fifo_rx_empty),
     .o_full(fifo_rx_full)
 );
@@ -88,7 +88,7 @@ fifo #(.DEPTH(2)) fifo_tx(
     .i_reset(i_reset),
     .i_dat(i_slave_data),
     .o_dat(fifo_tx_dat),
-    .i_push(r_fifo_tx_push),
+    .i_push(fifo_tx_push),
     .i_pop(r_fifo_tx_pop),
     .o_empty(fifo_tx_empty),
     .o_full(fifo_tx_full)
@@ -135,11 +135,8 @@ assign o_slave_data = i_slave_addr ? fifo_rx_dat : status;
 always @(posedge i_clk)
     o_slave_ack  <= i_slave_cs;
 
-always @(posedge i_clk)
-    r_fifo_tx_push <= i_slave_cs && i_slave_we && i_slave_addr && ~r_fifo_tx_push;
-
-always @(posedge i_clk)
-    r_fifo_rx_pop <= i_slave_cs && ~i_slave_we && ~i_slave_addr && ~r_fifo_rx_pop;
+assign fifo_tx_push = i_slave_cs && i_slave_we && i_slave_addr;
+assign fifo_rx_pop = i_slave_cs && ~i_slave_we && ~i_slave_addr;
         
 
 endmodule

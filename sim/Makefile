@@ -21,7 +21,7 @@ LDFLAGS=#-LDFLAGS
 CXXFLAGS += -DTRACE_ON
 
 CPPSRC=sim.cpp uart.cpp
-VERILOGSRC=../rtl/*.v
+VERILOGSRC=../rtl/UartMasterSlave.v ../rtl/UartProtocol.v ../rtl/uart_rx.v ../rtl/uart_tx.v ../rtl/fifo.v
 
 all: top
 
@@ -29,16 +29,16 @@ verilator: $(CPPSRC) $(VERILOGSRC)
 	verilator $(VFLAGS) $(VERILOGSRC) $(CPPSRC)
 
 top: verilator
-	make OPT_FAST="" -C $(VERILATOR_OUTPUTDIR) -j -f VUartMaster.mk
+	make OPT_FAST="" -C $(VERILATOR_OUTPUTDIR) -j -f VUartMasterSlave.mk
 
 sim: top
-	$(VERILATOR_OUTPUTDIR)/VUartMaster -d -t
+	$(VERILATOR_OUTPUTDIR)/VUartMasterSlave -t
 
 wave: sim
 	gtkwave sim.gtkw &
 
 iverilog:
-	iverilog -s UartMaster *.v
+	iverilog -s UartMasterSlave *.v
 
 clean:
 	rm -f trace.vcd a.out

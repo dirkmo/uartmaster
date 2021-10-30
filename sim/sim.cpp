@@ -80,17 +80,20 @@ void handle(VUartMasterSlave *pCore) {
     }
 }
 
-void wait_for_posedge(void) {
-    static int clk = -1;
-    if (clk != pCore->i_clk && pCore->i_clk) {
+void wait_for_posedge(VUartMasterSlave *pCore) {
+    while(pCore->i_clk) {
+        tick();
+        handle(pCore);
+    }
+    while(!pCore->i_clk) {
         tick();
         handle(pCore);
     }
 }
 
-void bus_write(uint16_t addr, uint8_t dat) {
+void bus_write(VUartMasterSlave *pCore, uint16_t addr, uint8_t dat) {
     printf("write!\n");
-    wait_for_posedge();
+    wait_for_posedge(pCore);
     pCore->i_slave_data = dat;
     pCore->i_slave_addr = addr;
     pCore->i_slave_cs = 1;
@@ -99,15 +102,15 @@ void bus_write(uint16_t addr, uint8_t dat) {
         handle(pCore);
         tick();
     }
-    wait_for_posedge();
     pCore->i_slave_data = 0;
     pCore->i_slave_addr = 0;
     pCore->i_slave_cs = 0;
     pCore->i_slave_we = 0;
+    wait_for_posedge(pCore);
 }
 
-uint8_t bus_read(uint16_t addr) {
-    wait_for_posedge();
+uint8_t bus_read(VUartMasterSlave *pCore, uint16_t addr) {
+    wait_for_posedge(pCore);
     pCore->i_slave_addr = addr;
     pCore->i_slave_cs = 1;
     pCore->i_slave_we = 0;
@@ -115,12 +118,13 @@ uint8_t bus_read(uint16_t addr) {
         handle(pCore);
         tick();
     }
-    wait_for_posedge();
+    uint8_t dat = pCore->o_slave_data;
     pCore->i_slave_data = 0;
     pCore->i_slave_addr = 0;
     pCore->i_slave_cs = 0;
     pCore->i_slave_we = 0;
-    return pCore->o_slave_data;
+    wait_for_posedge(pCore);
+    return dat;
 }
 
 int main(int argc, char *argv[]) {
@@ -142,9 +146,10 @@ int main(int argc, char *argv[]) {
 
     tick();
 
-    printf("Status: %02x\n", bus_read(0));
-    for( const char *c = "abc"; *c; bus_write(1, *c++));
-    printf("Status: %02x\n", bus_read(0));
+
+    printf("Status: %02x\n", bus_read(pCore, 0));
+    for( const char *c = "abc"; *c; bus_write(pCore, 1, *c++));
+    printf("Status: %02x\n", bus_read(pCore, 0));
 
     uart_send(1, "L432aRWa4");
 
