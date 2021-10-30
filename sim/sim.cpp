@@ -80,6 +80,49 @@ void handle(VUartMasterSlave *pCore) {
     }
 }
 
+void wait_for_posedge(void) {
+    static int clk = -1;
+    if (clk != pCore->i_clk && pCore->i_clk) {
+        tick();
+        handle(pCore);
+    }
+}
+
+void bus_write(uint16_t addr, uint8_t dat) {
+    printf("write!\n");
+    wait_for_posedge();
+    pCore->i_slave_data = dat;
+    pCore->i_slave_addr = addr;
+    pCore->i_slave_cs = 1;
+    pCore->i_slave_we = 1;
+    while(!pCore->o_slave_ack) {
+        handle(pCore);
+        tick();
+    }
+    wait_for_posedge();
+    pCore->i_slave_data = 0;
+    pCore->i_slave_addr = 0;
+    pCore->i_slave_cs = 0;
+    pCore->i_slave_we = 0;
+}
+
+uint8_t bus_read(uint16_t addr) {
+    wait_for_posedge();
+    pCore->i_slave_addr = addr;
+    pCore->i_slave_cs = 1;
+    pCore->i_slave_we = 0;
+    while(!pCore->o_slave_ack) {
+        handle(pCore);
+        tick();
+    }
+    wait_for_posedge();
+    pCore->i_slave_data = 0;
+    pCore->i_slave_addr = 0;
+    pCore->i_slave_cs = 0;
+    pCore->i_slave_we = 0;
+    return pCore->o_slave_data;
+}
+
 int main(int argc, char *argv[]) {
     Verilated::traceEverOn(true);
     pCore = new VUartMasterSlave();
@@ -96,6 +139,12 @@ int main(int argc, char *argv[]) {
     for ( int i = 0; i < sizeof(mem); i++ ) {
         mem[i] = i & 0xff;
     }
+
+    tick();
+
+    printf("Status: %02x\n", bus_read(0));
+    for( const char *c = "abc"; *c; bus_write(1, *c++));
+    printf("Status: %02x\n", bus_read(0));
 
     uart_send(1, "L432aRWa4");
 
