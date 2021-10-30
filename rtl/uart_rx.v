@@ -2,7 +2,7 @@ module uart_rx(
     input i_clk,
     input i_reset,
     output [7:0] o_dat,
-    output o_received,
+    output o_received_pulse,
     input rx
 );
 
@@ -43,7 +43,7 @@ wire [2:0] bit_idx = state_rx[2:0];
 assign baud_start = (state_rx == IDLE) && (rx == 1'b0);
 
 // only push to fifo if not full
-assign o_received = (state_rx == INTERRUPT);
+assign o_received_pulse = (state_rx == INTERRUPT);
 
 reg [7:0] rx_buf; // temp receive buffer
 
