@@ -2,6 +2,8 @@
 import sys, os
 import argparse
 import serial
+import termios
+import tty
 
 ser = 0
 port = "/dev/ttyUSB0"
@@ -11,7 +13,8 @@ def handle_args():
     parser = argparse.ArgumentParser(description="FPGA Bus communication via serial port")
     parser.add_argument('-p', type=str, default='/dev/ttyUSB0', help='serial device')
     args = parser.parse_args()
-    port = args["p"]
+    port = args.p
+    
 
 def connect_serial():
     global ser
@@ -23,14 +26,27 @@ def connect_serial():
         print(f"ERROR: Cannot open port {port}")
         exit(1)
 
+def getch():
+    fd = sys.stdin.fileno()
+    old_settings = termios.tcgetattr(fd)
+    try:
+        tty.setraw(sys.stdin.fileno())
+        ch = sys.stdin.read(1)
+    finally:
+        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+    return ch
+
+
+BSP = "\x7f"
+ESC = "\x1b"
+
 def main():
     handle_args()
     connect_serial()
 
-
-
-   
-
+    ch = 0
+    while ch != ESC:
+        ch = getch()
 
 
 main()
