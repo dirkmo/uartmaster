@@ -2,51 +2,64 @@
 import sys, os
 import argparse
 import serial
-import termios
-import tty
 
 ser = 0
 port = "/dev/ttyUSB0"
 
-def handle_args():
-    global port
-    parser = argparse.ArgumentParser(description="FPGA Bus communication via serial port")
-    parser.add_argument('-p', type=str, default='/dev/ttyUSB0', help='serial device')
-    args = parser.parse_args()
-    port = args.p
-    
-
 def connect_serial():
     global ser
     try:
-        ser = serial.Serial(port)
+        ser = serial.Serial(port, baudrate=115200)
         # ser.write(b'Hallo')
-        # ser.close()
     except:
         print(f"ERROR: Cannot open port {port}")
         exit(1)
 
-def getch():
-    fd = sys.stdin.fileno()
-    old_settings = termios.tcgetattr(fd)
-    try:
-        tty.setraw(sys.stdin.fileno())
-        ch = sys.stdin.read(1)
-    finally:
-        termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-    return ch
 
+parser = argparse.ArgumentParser(description="Transmit file to FPGA system using channel 1 of the UartMaster protocol.")
+parser.add_argument('-p', type=str, metavar='<device>', default='/dev/ttyUSB0', help='Serial device.')
+parser.add_argument('-f', type=str, metavar='<file>', help='File name for reading/writing.')
+parser.add_argument('-o', type=str, metavar='<offset>', default="0", help='Offset address in device.')
+parser.add_argument('-c', action='store_const', const=True, default=False, help='Perform readback after write.')
+# parser.add_argument('-r', type=str, default=False, help='Perform read from device.')
+parser.add_argument('-w', action='store_const', const=True, default=False, help='Perform write to device.')
+args = parser.parse_args()
 
-BSP = "\x7f"
-ESC = "\x1b"
+with open(args.f) as f:
+    bytes = bytearray(f.read(), 'ascii')
 
-def main():
-    handle_args()
-    connect_serial()
+connect_serial()
 
-    ch = 0
-    while ch != ESC:
-        ch = getch()
+offset = args.o.upper()
+if (offset[0:2] == '0X'):
+    addr = int(offset[2:],16)
+else:
+    addr = int(args.o)
 
+channel = 1 # or 0
 
-main()
+saddr = f'{addr:04x}L'[::-1]
+
+# set address on device
+
+if args.w == 1:
+    print("Writing data to device...")
+
+    data = saddr + "W"
+    
+    for b in bytes:
+        nibbles = f"{b:02x}"[::-1]
+        data += nibbles
+
+    if channel == 0:
+        ba = bytearray(data,'ascii')
+    else:
+        iba = [ord(b) | 0x80 for b in data]
+        ba = bytearray(iba)
+    
+    ser.write(ba)
+    print("done.")
+    if args.c == 1:
+        # readback tbd
+        pass
+    
