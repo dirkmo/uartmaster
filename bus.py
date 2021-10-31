@@ -40,8 +40,6 @@ channel = 1 # or 0
 
 saddr = f'{addr:04x}L'[::-1]
 
-# set address on device
-
 if args.w == 1:
     print("Writing data to device...")
 
