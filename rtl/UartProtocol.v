@@ -1,3 +1,5 @@
+`default_nettype none
+
 module UartProtocol (
     input i_clk,
     input i_reset,
@@ -13,16 +15,20 @@ module UartProtocol (
 
     input i_uart_send_ready,
     output o_uart_send_pulse,
-    output [7:0] o_uart_dat
+    output [7:0] o_uart_dat,
+
+    output o_reset
 );
 
 // Protocol:
 // L<addr>: Set address
 // R: Read from address and auto-increment
 // W: Write to address and auto-increment
+// *: Generate single clock cycle reset pulse
 
 // "L1a00W4d00": Writes 0x4d 0x00 to address 0x1a00, 0x1a01
 // "L1234RR":    Reads two bytes from address 0x1234, 0x1235
+
 
 // hex characters are lower case
 
@@ -142,5 +148,13 @@ assign o_cs = r_wstate || (r_rstate == 1);
 assign o_we = r_wstate;
 assign o_addr = r_address;
 assign o_dat = r_data;
+
+
+// reset generation
+reg r_reset;
+always @(posedge i_clk)
+    r_reset = (i_uart_dat == "*") && i_uart_received_pulse && ~r_reset;
+
+assign o_reset = r_reset;
 
 endmodule

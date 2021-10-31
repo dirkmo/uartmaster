@@ -1,3 +1,5 @@
+`default_nettype none
+
 module uart_rx(
     input i_clk,
     input i_reset,

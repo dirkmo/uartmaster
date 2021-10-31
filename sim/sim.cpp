@@ -91,6 +91,20 @@ void wait_for_posedge(VUartMasterSlave *pCore) {
     }
 }
 
+void wait_verilog_uart_received(VUartMasterSlave *pCore) {
+    while(pCore->UartMasterSlave->uart_rx_received_pulse == 0) {
+        tick();
+        handle(pCore);
+    }
+}
+
+void wait_verilog_uart_sent(VUartMasterSlave *pCore) {
+    while(pCore->UartMasterSlave->uart_tx_ready == 0) {
+        tick();
+        handle(pCore);
+    }
+}
+
 void bus_write(VUartMasterSlave *pCore, uint16_t addr, uint8_t dat) {
     printf("write!\n");
     wait_for_posedge(pCore);
@@ -146,16 +160,23 @@ int main(int argc, char *argv[]) {
 
     tick();
 
-
     printf("Status: %02x\n", bus_read(pCore, 0));
     for( const char *c = "abcd"; *c; bus_write(pCore, 1, *c++));
     printf("Status: %02x\n", bus_read(pCore, 0));
 
     uart_send(1, "L87RWa4");
 
-    while(tickcount < 100000 * ts) {
+    while(tickcount < 70000 * ts) {
         handle(pCore);
         tick();
+    }
+
+    // reset test
+    uart_send(1, "*");
+    
+    while(pCore->o_reset == 0) {
+        tick();
+        handle(pCore);
     }
 
     pCore->final();

@@ -1,3 +1,5 @@
+`default_nettype none
+
 module UartMasterSlave(
     input  i_clk,
     input  i_reset,
@@ -18,15 +20,18 @@ module UartMasterSlave(
     output       o_int,
 
     input  i_uart_rx,
-    output o_uart_tx
+    output o_uart_tx,
+
+    output o_reset
 );
 
 parameter
     BAUDRATE /* verilator public */ = 115200,
     SYS_FREQ /* verilator public */ = 25000000;
 
-wire uart_tx_ready;
-wire uart_rx_received_pulse;
+wire uart_tx_ready /* verilator public */;
+wire uart_rx_received_pulse /* verilator public */;
+wire uart_tx_start /* verilator public */;
 wire received_pulse_to_protocol;
 wire fifo_rx_push_pulse;
 wire fifo_rx_pop;
@@ -57,7 +62,8 @@ UartProtocol uartprotocol0 (
     .i_uart_dat( {1'b0, uart_rx_dat[6:0]} ),
     .i_uart_send_ready(~r_prot_buffer_full),
     .o_uart_send_pulse(prot_push),
-    .o_uart_dat(uart_prot_tx_dat)
+    .o_uart_dat(uart_prot_tx_dat),
+    .o_reset(o_reset)
 );
 
 fifo #(.DEPTH(3)) fifo_rx(
@@ -106,9 +112,9 @@ always @(posedge i_clk)
         r_prot_buffer_full <= 1'b0;
 
 
-assign uart_tx_dat = ~fifo_tx_empty ? {1'b0, fifo_tx_dat[6:0]} : {1'b1, prot_buffer[6:0]};
-wire uart_tx_start = (~fifo_tx_empty || r_prot_buffer_full) && uart_tx_ready;
-wire prot_pop      =   fifo_tx_empty && r_prot_buffer_full  && uart_tx_ready;
+assign uart_tx_dat   = ~fifo_tx_empty ? {1'b0, fifo_tx_dat[6:0]} : {1'b1, prot_buffer[6:0]};
+assign uart_tx_start = (~fifo_tx_empty || r_prot_buffer_full) && uart_tx_ready;
+wire prot_pop        =   fifo_tx_empty && r_prot_buffer_full  && uart_tx_ready;
 
 always @(posedge i_clk)
     r_fifo_tx_pop <= ~r_fifo_tx_pop && ~fifo_tx_empty && uart_tx_ready;

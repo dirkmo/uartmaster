@@ -3,29 +3,34 @@ import sys, os
 import argparse
 import serial
 
+ser = 0
+port = "/dev/ttyUSB0"
 
-def main():
+def handle_args():
+    global port
     parser = argparse.ArgumentParser(description="FPGA Bus communication via serial port")
-    parser.add_argument('-f', type=str, help="Source file")
     parser.add_argument('-p', type=str, default='/dev/ttyUSB0', help='serial device')
-    parser.add_argument('-o', type=str, default='0')
     args = parser.parse_args()
-    print(args)
+    port = args["p"]
 
-   
-    exit(0)
-    if len(sys.argv) < 2:
-        print("Error: Missing arguments")
-        #exit(1)
-
-
-    port = "/dev/ttyUSB0"
+def connect_serial():
+    global ser
     try:
         ser = serial.Serial(port)
-        ser.write(b'Hallo')
-        ser.close()
+        # ser.write(b'Hallo')
+        # ser.close()
     except:
-        print(f"Cannot open port {port}")
+        print(f"ERROR: Cannot open port {port}")
         exit(1)
+
+def main():
+    handle_args()
+    connect_serial()
+
+
+
+   
+
+
 
 main()
