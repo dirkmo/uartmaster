@@ -148,10 +148,10 @@ int main(int argc, char *argv[]) {
 
 
     printf("Status: %02x\n", bus_read(pCore, 0));
-    for( const char *c = "abc"; *c; bus_write(pCore, 1, *c++));
+    for( const char *c = "abcd"; *c; bus_write(pCore, 1, *c++));
     printf("Status: %02x\n", bus_read(pCore, 0));
 
-    uart_send(1, "L432aRWa4");
+    uart_send(1, "L87RWa4");
 
     while(tickcount < 100000 * ts) {
         handle(pCore);
