@@ -4,8 +4,8 @@ module UartMasterSlave(
     input  i_clk,
     input  i_reset,
 
-    input  [7:0]  i_master_data,
-    output [7:0]  o_master_data,
+    input  [15:0] i_master_data,
+    output [15:0] o_master_data,
     output [15:0] o_master_addr,
     input  i_master_ack,
     output o_master_we,

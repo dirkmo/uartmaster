@@ -4,8 +4,8 @@ module UartProtocol (
     input i_clk,
     input i_reset,
     input i_ack,
-    input [7:0] i_dat,
-    output [7:0] o_dat,
+    input  [15:0] i_dat,
+    output [15:0] o_dat,
     output [15:0] o_addr,
     output o_we,
     output o_cs,
@@ -66,15 +66,17 @@ wire [7:0] nibble_af = i_uart_dat - 8'd97 + 8'd10; // 97 ('a') = 0110 0000
 wire [7:0] nibble    = i_uart_dat[6] ? nibble_af : nibble_09; 
 wire nibble_valid = ~|nibble[7:4] && i_uart_received_pulse;
 
-wire perform_write_pulse = (r_mode == MODE_WRITE) && nibble_valid && r_nibble_idx[0];
-reg [7:0] r_data;
+wire perform_write_pulse = (r_mode == MODE_WRITE) && nibble_valid && (r_nibble_idx == 2'h3);
+reg [15:0] r_data;
 always @(posedge i_clk)
 begin
     if (r_mode == MODE_WRITE) begin
         if (nibble_valid) begin
-            case (r_nibble_idx[0])
-                0: r_data[3:0] <= nibble[3:0];
-                1: r_data[7:4] <= nibble[3:0];
+            case (r_nibble_idx)
+                2'h0: r_data[15:12] <= nibble[3:0];
+                2'h1: r_data[11:8]  <= nibble[3:0];
+                2'h2: r_data[7:4]   <= nibble[3:0];
+                2'h3: r_data[3:0]   <= nibble[3:0];
             endcase
         end
     end
@@ -100,26 +102,31 @@ wire write_done_pulse = r_wstate && i_ack;
 
 
 // read from bus state machine
-reg [1:0] r_rstate;
+reg [2:0] r_rstate;
 always @(posedge i_clk)
 begin
     case (r_rstate)
-        0: if (perform_read_pulse) r_rstate <= 1;
-        1: if (i_ack)              r_rstate <= 2;
-        2: if (i_uart_send_ready)  r_rstate <= 3;
-        3: if (i_uart_send_ready)  r_rstate <= 0;
+        0: if (perform_read_pulse) r_rstate <= 1; // wait for read start
+        1: if (i_ack)              r_rstate <= 2; // wait for bus ack
+        default: if (i_uart_send_ready)  r_rstate <= r_rstate + 1; // send nibbles
+        5: if (i_uart_send_ready)  r_rstate <= 0; // wait for last nibble sent
     endcase
     if(i_reset) begin
         r_rstate <= 0;
     end
 end
 
-wire [3:0] nibble_read  = (r_rstate == 2) ? r_data[7:4] : r_data[3:0];
+wire [3:0] nibble_read  =
+    (r_rstate == 2) ? r_data[15:12] :
+    (r_rstate == 3) ? r_data[11:8]  :
+    (r_rstate == 4) ? r_data[7:4]   :
+                      r_data[3:0];
+
 wire [7:0] ascii_nibble = { 4'd0, nibble_read } + ((nibble_read > 9) ? 8'd87 : 8'd48);
 
 assign o_uart_dat = ascii_nibble;
 
-assign o_uart_send_pulse = r_rstate[1] && i_uart_send_ready;
+assign o_uart_send_pulse = |r_rstate[2:1] && i_uart_send_ready;
 
 wire read_done_pulse = (r_rstate==1) && i_ack;
 
@@ -130,10 +137,10 @@ begin
     if (r_mode == MODE_ADDRESS) begin
         if (nibble_valid) begin
             case (r_nibble_idx)
-                0: r_address[3:0] <= nibble[3:0];
-                1: r_address[7:4] <= nibble[3:0];
-                2: r_address[11:8] <= nibble[3:0];
-                3: r_address[15:12] <= nibble[3:0];
+                0: r_address[15:12] <= nibble[3:0];
+                1: r_address[11:8]  <= nibble[3:0];
+                2: r_address[7:4]   <= nibble[3:0];
+                3: r_address[3:0]   <= nibble[3:0];
             endcase
         end
     end

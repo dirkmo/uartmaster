@@ -14,7 +14,7 @@ VUartMasterSlave *pCore;
 uint64_t tickcount = 0;
 uint64_t ts = 1000;
 
-uint8_t mem[0x10000];
+uint16_t mem[0x10000];
 
 void handle(VUartMasterSlave *pCore);
 
@@ -57,10 +57,10 @@ void handle(VUartMasterSlave *pCore) {
         if (pCore->o_master_cs) {
             if (pCore->o_master_we) {
                 mem[pCore->o_master_addr] = pCore->o_master_data;
-                printf("mem write: %04x <-- %02x\n", pCore->o_master_addr, mem[pCore->o_master_addr]);
+                printf("mem write: %04x <-- %04x\n", pCore->o_master_addr, mem[pCore->o_master_addr]);
             } else {
                 pCore->i_master_data = mem[pCore->o_master_addr];
-                printf("mem read: %04x --> %02x\n", pCore->o_master_addr, mem[pCore->o_master_addr]);
+                printf("mem read: %04x --> %04x\n", pCore->o_master_addr, mem[pCore->o_master_addr]);
             }
         } else {
             pCore->i_master_data = 0;
@@ -155,7 +155,7 @@ int main(int argc, char *argv[]) {
 
     reset();
     for ( int i = 0; i < sizeof(mem); i++ ) {
-        mem[i] = i & 0xff;
+        mem[i] = i;
     }
 
     tick();
@@ -164,7 +164,7 @@ int main(int argc, char *argv[]) {
     for( const char *c = "abcd"; *c; bus_write(pCore, 1, *c++));
     printf("Status: %02x\n", bus_read(pCore, 0));
 
-    uart_send(1, "L87RWa4");
+    uart_send(1, "L87RWa4b5");
 
     while(tickcount < 70000 * ts) {
         handle(pCore);
