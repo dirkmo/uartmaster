@@ -73,8 +73,8 @@ begin
     if (r_mode == MODE_WRITE) begin
         if (nibble_valid) begin
             case (r_nibble_idx[0])
-                0: r_data[3:0] <= nibble[3:0];
-                1: r_data[7:4] <= nibble[3:0];
+                0: r_data[7:4] <= nibble[3:0];
+                1: r_data[3:0] <= nibble[3:0];
             endcase
         end
     end
@@ -130,10 +130,10 @@ begin
     if (r_mode == MODE_ADDRESS) begin
         if (nibble_valid) begin
             case (r_nibble_idx)
-                0: r_address[3:0] <= nibble[3:0];
-                1: r_address[7:4] <= nibble[3:0];
-                2: r_address[11:8] <= nibble[3:0];
-                3: r_address[15:12] <= nibble[3:0];
+                0: r_address[15:12] <= nibble[3:0];
+                1: r_address[11:8] <= nibble[3:0];
+                2: r_address[7:4] <= nibble[3:0];
+                3: r_address[3:0] <= nibble[3:0];
             endcase
         end
     end
