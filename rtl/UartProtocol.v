@@ -26,8 +26,8 @@ module UartProtocol (
 // W: Write to address and auto-increment
 // *: Generate single clock cycle reset pulse
 
-// "L1a00W4d00": Writes 0x4d 0x00 to address 0x1a00, 0x1a01
-// "L1234RR":    Reads two bytes from address 0x1234, 0x1235
+// "L1a00W4d0012ab": Writes 0x4d00 to address 0x1a00, 0x12ab to 0x1a01
+// "L1234RR":    Reads two words from address 0x1234, 0x1235
 
 
 // hex characters are lower case
