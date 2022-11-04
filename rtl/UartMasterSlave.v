@@ -36,7 +36,9 @@ wire received_pulse_to_protocol;
 wire fifo_rx_push_pulse;
 wire fifo_rx_pop;
 wire fifo_tx_push;
-reg  r_fifo_tx_pop;
+reg  r_fifo_tx_push_pulse;
+reg  r_fifo_tx_pop_pulse;
+reg  r_fifo_rx_pop_pulse;
 wire prot_push;
 wire fifo_tx_full;
 wire fifo_rx_full;
@@ -72,7 +74,7 @@ fifo #(.DEPTH(3)) fifo_rx(
     .i_dat(uart_rx_dat),
     .o_dat(fifo_rx_dat),
     .i_push(fifo_rx_push_pulse),
-    .i_pop(fifo_rx_pop),
+    .i_pop(r_fifo_rx_pop_pulse),
     .o_empty(fifo_rx_empty),
     .o_full(fifo_rx_full)
 );
@@ -94,8 +96,8 @@ fifo #(.DEPTH(2)) fifo_tx(
     .i_reset(i_reset),
     .i_dat(i_slave_data),
     .o_dat(fifo_tx_dat),
-    .i_push(fifo_tx_push),
-    .i_pop(r_fifo_tx_pop),
+    .i_push(r_fifo_tx_push_pulse),
+    .i_pop(r_fifo_tx_pop_pulse),
     .o_empty(fifo_tx_empty),
     .o_full(fifo_tx_full)
 );
@@ -117,7 +119,7 @@ assign uart_tx_start = (~fifo_tx_empty || r_prot_buffer_full) && uart_tx_ready;
 wire prot_pop        =   fifo_tx_empty && r_prot_buffer_full  && uart_tx_ready;
 
 always @(posedge i_clk)
-    r_fifo_tx_pop <= ~r_fifo_tx_pop && ~fifo_tx_empty && uart_tx_ready;
+    r_fifo_tx_pop_pulse <= ~r_fifo_tx_pop_pulse && ~fifo_tx_empty && uart_tx_ready;
 
 uart_tx #(.TICK(SYS_FREQ/BAUDRATE)) uart_tx0(
     .i_clk(i_clk),
@@ -143,6 +145,11 @@ always @(posedge i_clk)
 
 assign fifo_tx_push = i_slave_cs && i_slave_we && i_slave_addr;
 assign fifo_rx_pop = i_slave_cs && ~i_slave_we && ~i_slave_addr;
-        
+
+always @(posedge i_clk)
+    r_fifo_tx_push_pulse <= ~r_fifo_tx_push_pulse && fifo_tx_push;
+
+always @(posedge i_clk)
+    r_fifo_rx_pop_pulse <= ~r_fifo_rx_pop_pulse && fifo_rx_pop;
 
 endmodule
