@@ -1,8 +1,5 @@
 #include <queue>
 #include <stdio.h>
-#include "verilated.h"
-#include <verilated_vcd_c.h>
-#include "VUartMasterSlave.h"
 #include "uart.h"
 
 using namespace std;
