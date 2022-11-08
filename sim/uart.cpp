@@ -12,6 +12,10 @@ static uint8_t *RX;
 static uint8_t *CLK;
 static int TICK;
 
+#ifndef EDGE_DETECTION
+#define EDGE_DETECTION 0
+#endif
+
 static int handle_uart_rx() {
     static int lastClk = 0;
     static int tick_count = 0;
@@ -22,11 +26,10 @@ static int handle_uart_rx() {
         IDLE = 9,
         STARTBIT = 10,
     } state = IDLE;
-
     int rx = *TX;
-    if (lastClk != *CLK) {
+    if (EDGE_DETECTION || (lastClk != *CLK)) {
         lastClk = *CLK;
-        if (*CLK) { // posedge
+        if (EDGE_DETECTION || *CLK) { // posedge
             tick_count++;
             switch( state ) {
                 case IDLE:
