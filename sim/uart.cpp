@@ -81,9 +81,9 @@ static void handle_uart_tx(void) {
         IDLE = 9,
         STARTBIT = 10,
     } state = IDLE;
-    if (lastClk != *CLK) {
+    if (EDGE_DETECTION || (lastClk != *CLK)) {
         lastClk = *CLK;
-        if (*CLK) { // posedge
+        if (EDGE_DETECTION || *CLK) { // posedge
             tick_count++;
             switch( state ) {
                 case IDLE:
@@ -134,10 +134,14 @@ int uart_handle(int *rxbyte) {
     return 0;
 }
 
+void uart_putc(int ch, char dat) {
+    dat |= ((!!ch) << 7);
+    fifo_send_to_fpga.push(dat);
+}
+
 void uart_send(int ch, const char *dat) {
     while(*dat) {
-        char c = *dat | ((!!ch) << 7);
-        fifo_send_to_fpga.push(c);
+        uart_putc(ch, *dat);
         dat++;
     }
 }

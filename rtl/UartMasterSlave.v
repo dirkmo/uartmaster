@@ -38,7 +38,7 @@ wire fifo_rx_pop;
 wire fifo_tx_push;
 reg  r_fifo_tx_push_pulse;
 reg  r_fifo_tx_pop_pulse;
-reg  r_fifo_rx_pop_pulse;
+wire  w_fifo_rx_pop_pulse;
 wire prot_push;
 wire fifo_tx_full;
 wire fifo_rx_full;
@@ -74,7 +74,7 @@ fifo #(.DEPTH(3)) fifo_rx(
     .i_dat(uart_rx_dat),
     .o_dat(fifo_rx_dat),
     .i_push(fifo_rx_push_pulse),
-    .i_pop(r_fifo_rx_pop_pulse),
+    .i_pop(w_fifo_rx_pop_pulse),
     .o_empty(fifo_rx_empty),
     .o_full(fifo_rx_full)
 );
@@ -149,7 +149,10 @@ assign fifo_rx_pop = i_slave_cs && ~i_slave_we && ~i_slave_addr;
 always @(posedge i_clk) // pulse on rising edge of fifo_tx_push
     r_fifo_tx_push_pulse <= ~r_fifo_tx_push_pulse && fifo_tx_push;
 
-always @(posedge i_clk) // pulse on falling edge of fifo_rx_pop
-    r_fifo_rx_pop_pulse <= r_fifo_rx_pop_pulse && ~fifo_rx_pop;
+reg r_fifo_rx_pop;
+always @(posedge i_clk)
+    r_fifo_rx_pop <= fifo_rx_pop;
+
+assign w_fifo_rx_pop_pulse = ~fifo_rx_pop && r_fifo_rx_pop; // pulse on falling edge of fifo_rx_pop
 
 endmodule
