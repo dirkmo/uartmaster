@@ -128,7 +128,7 @@ int uart_handle(int *rxbyte) {
     int c = handle_uart_rx();
     if (c >= 0 && rxbyte) {
         *rxbyte = c;
-        fifo_receive_from_fpga.push(c);
+        // fifo_receive_from_fpga.push(c);
         return 1;
     }
     return 0;

@@ -144,7 +144,7 @@ always @(posedge i_clk)
     o_slave_ack  <= i_slave_cs;
 
 assign fifo_tx_push = i_slave_cs && i_slave_we && i_slave_addr;
-assign fifo_rx_pop = i_slave_cs && ~i_slave_we && ~i_slave_addr;
+assign fifo_rx_pop = i_slave_cs && ~i_slave_we && i_slave_addr;
 
 always @(posedge i_clk) // pulse on rising edge of fifo_tx_push
     r_fifo_tx_push_pulse <= ~r_fifo_tx_push_pulse && fifo_tx_push;
