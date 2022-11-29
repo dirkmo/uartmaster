@@ -9,7 +9,7 @@ module UartProtocol (
     output [15:0] o_addr,
     output o_we,
     output o_cs,
-    
+
     input i_uart_received_pulse,
     input [7:0] i_uart_dat,
 
@@ -61,10 +61,14 @@ begin
         r_nibble_idx <= r_nibble_idx + 1'b1;
 end
 
-wire [7:0] nibble_09 = i_uart_dat - 8'd48; // 48 ('0') = 0011 0000
-wire [7:0] nibble_af = i_uart_dat - 8'd97 + 8'd10; // 97 ('a') = 0110 0000
-wire [7:0] nibble    = i_uart_dat[6] ? nibble_af : nibble_09; 
-wire nibble_valid = ~|nibble[7:4] && i_uart_received_pulse;
+// 76 ('L') 01001100
+// 87 ('W') 01010111
+// 82 ('R') 01010010
+wire nibble_09_valid = (i_uart_dat[7:4] == 4'b0011); // 48 ('0') = 0011 0000
+wire nibble_af_valid = (i_uart_dat[7:4] == 4'b0110); // 97 ('a') = 0110 0000
+wire [3:0] nibble    = nibble_af_valid ? (i_uart_dat[3:0]+4'd9) : i_uart_dat[3:0];
+
+wire nibble_valid = i_uart_received_pulse && (nibble_09_valid || nibble_af_valid);
 
 wire perform_write_pulse = (r_mode == MODE_WRITE) && nibble_valid && r_nibble_idx[0];
 reg [7:0] r_data;
