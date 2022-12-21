@@ -68,7 +68,7 @@ void handle(VUartMasterSlave *pCore) {
         pCore->i_master_ack = pCore->o_master_cs;
     }
     clk = pCore->i_clk;
-    
+
     int rxbyte;
     int ret = uart_handle(&rxbyte);
     if (ret) {
@@ -172,12 +172,14 @@ int main(int argc, char *argv[]) {
     }
 
     // reset test
-    uart_send(1, "*");
-    
+    uart_send(1, ",");
+
     while(pCore->o_reset == 0) {
         tick();
         handle(pCore);
     }
+
+    uart_send(1, ".");
 
     pCore->final();
     delete pCore;

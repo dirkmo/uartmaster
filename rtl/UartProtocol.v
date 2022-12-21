@@ -24,7 +24,8 @@ module UartProtocol (
 // L<addr>: Set address
 // R: Read from address and auto-increment
 // W: Write to address and auto-increment
-// *: Generate single clock cycle reset pulse
+// ,: assert reset
+// .: release reset
 
 // "L1a00W4d00": Writes 0x4d 0x00 to address 0x1a00, 0x1a01
 // "L1234RR":    Reads two bytes from address 0x1234, 0x1235
@@ -157,7 +158,12 @@ assign o_dat = r_data;
 // reset generation
 reg r_reset;
 always @(posedge i_clk)
-    r_reset = (i_uart_dat == "*") && i_uart_received_pulse && ~r_reset;
+    if (i_uart_received_pulse) begin
+        if (i_uart_dat == ",")
+            r_reset <= 1'b1;
+        else if (i_uart_dat == ".")
+            r_reset <= 1'b0;
+    end
 
 assign o_reset = r_reset;
 
