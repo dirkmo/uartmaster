@@ -156,13 +156,16 @@ assign o_dat = r_data;
 
 
 // reset generation
+// assert reset:  ','  8'b0010_1100'
+// release reset: '.'  8'b0010_1110'
+
 reg r_reset;
 always @(posedge i_clk)
     if (i_uart_received_pulse) begin
-        if (i_uart_dat == ",")
-            r_reset <= 1'b1;
-        else if (i_uart_dat == ".")
-            r_reset <= 1'b0;
+        if ({i_uart_dat[7:2],i_uart_dat[0]} == 7'b0010110)
+        begin
+            r_reset <= ~i_uart_dat[1];
+        end
     end
 
 assign o_reset = r_reset;
