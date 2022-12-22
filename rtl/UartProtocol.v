@@ -48,17 +48,19 @@ wire perform_read_pulse = i_uart_received_pulse && (i_uart_dat == "R");
 always @(posedge i_clk)
 begin
     if (address_pulse || i_reset)
-        r_mode = MODE_ADDRESS;
+        r_mode <= MODE_ADDRESS;
     if (write_pulse)
-        r_mode = MODE_WRITE;
+        r_mode <= MODE_WRITE;
 end
+
+wire nibble_valid;
 
 reg [1:0] r_nibble_idx;
 always @(posedge i_clk)
 begin
-    if (address_pulse || write_pulse || perform_read_pulse || i_reset)
+    if (address_pulse || write_pulse || perform_write_pulse || perform_read_pulse || i_reset)
         r_nibble_idx <= 0;
-    else if (i_uart_received_pulse)
+    else if (nibble_valid)
         r_nibble_idx <= r_nibble_idx + 1'b1;
 end
 
@@ -69,7 +71,7 @@ wire nibble_09_valid = (i_uart_dat[7:4] == 4'b0011); // 48 ('0') = 0011 0000
 wire nibble_af_valid = (i_uart_dat[7:4] == 4'b0110); // 97 ('a') = 0110 0000
 wire [3:0] nibble    = nibble_af_valid ? (i_uart_dat[3:0]+4'd9) : i_uart_dat[3:0];
 
-wire nibble_valid = i_uart_received_pulse && (nibble_09_valid || nibble_af_valid);
+assign nibble_valid = i_uart_received_pulse && (nibble_09_valid || nibble_af_valid);
 
 wire perform_write_pulse = (r_mode == MODE_WRITE) && nibble_valid && r_nibble_idx[0];
 reg [7:0] r_data;
