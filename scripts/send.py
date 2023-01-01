@@ -15,6 +15,7 @@
 
 import argparse
 import serial
+import sys
 
 def connect_serial(port):
     global ser
@@ -26,6 +27,7 @@ def connect_serial(port):
 
 parser = argparse.ArgumentParser(description="Transmit data to FPGA system using channel 1 of the UartMaster protocol.")
 parser.add_argument('-p', type=str, metavar='<device>', default='/dev/ttyUSB0', help='Serial device.')
+parser.add_argument('-v', action='store_const', const=True, default=False, help='Print progess to stdout.')
 parser.add_argument('string',help="String to send to FPGA")
 args = parser.parse_args()
 
@@ -35,4 +37,9 @@ ba=bytearray(args.string,encoding='ascii')
 data = bytearray([(b | 0x80) for b in ba])
 
 for i,d in enumerate(data):
+    if args.v:
+        sys.stdout.write(f"\rProgress: {100*i//len(data)} %")
     ser.write(d.to_bytes(length=1,byteorder='little'))
+
+if args.v:
+    print("\rProgress: Done.")
